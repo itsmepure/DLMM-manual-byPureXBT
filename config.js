@@ -1,7 +1,9 @@
 // Trimmed config for the manual bot. Source of truth: env (.env).
 import "dotenv/config";
 
-export const MIN_SAFE_BINS_BELOW = 35;
+// Bot manual: user selalu konfirmasi sendiri, jadi floor range praktis dimatikan.
+// (Di agent autonomous asalnya 35 untuk mencegah AI deploy range sempit.)
+export const MIN_SAFE_BINS_BELOW = 1;
 
 export const config = {
   tokens: {

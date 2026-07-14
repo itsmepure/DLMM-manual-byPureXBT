@@ -2,8 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import config, { MIN_SAFE_BINS_BELOW } from "../config.js";
 
-test("MIN_SAFE_BINS_BELOW is 35", () => {
-  assert.equal(MIN_SAFE_BINS_BELOW, 35);
+test("MIN_SAFE_BINS_BELOW is 1 (manual bot: user confirms every deploy)", () => {
+  assert.equal(MIN_SAFE_BINS_BELOW, 1);
 });
 
 test("config has required keys", () => {
