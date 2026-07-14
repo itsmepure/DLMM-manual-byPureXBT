@@ -1,0 +1,21 @@
+{
+  "name": "manual-dlmm-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Manual Meteora DLMM Telegram bot — deploy/exit with Spot, Bid-Ask, Curve strategies",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "test": "node --test test/",
+    "smoke": "node scripts/smoke.js",
+    "postinstall": "node scripts/patch-anchor.js"
+  },
+  "dependencies": {
+    "@meteora-ag/dlmm": "1.9.4",
+    "@solana/web3.js": "^1.95.0",
+    "bn.js": "^5.2.1",
+    "bs58": "^5.0.0",
+    "dotenv": "^17.3.1"
+  },
+  "engines": { "node": ">=18.0.0" }
+}
