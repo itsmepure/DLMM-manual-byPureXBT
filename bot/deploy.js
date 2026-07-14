@@ -206,6 +206,18 @@ async function onConfirm(msg, _arg, mainMenu) {
   return mainMenu();
 }
 
+// Paste CA/mint di chat mana pun (di luar flow) -> langsung mulai pilih pool.
+export function looksLikeMint(text) {
+  return BASE58_RE.test(text.trim());
+}
+
+export async function handleMintPaste(text) {
+  const s = getSession();
+  s.step = "dep_mint";
+  s.data = {};
+  return onMintInput(text);
+}
+
 export function registerDeployFlow({ commandHandlers, callbackHandlers, mainMenu }) {
   commandHandlers["/deploy"] = () => askMint(null);
   callbackHandlers.push(

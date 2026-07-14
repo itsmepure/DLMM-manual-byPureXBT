@@ -9,7 +9,7 @@ import { getWalletBalances } from "./engine/wallet.js";
 import { getActiveBin } from "./engine/dlmm.js";
 import { loadPositions, setAlerted } from "./store.js";
 import { fmtNum, fmtUsd, shortAddr } from "./bot/format.js";
-import { registerDeployFlow } from "./bot/deploy.js";
+import { registerDeployFlow, looksLikeMint, handleMintPaste } from "./bot/deploy.js";
 import { registerPositionsFlow } from "./bot/positions.js";
 import { registerSettingsFlow } from "./bot/settings.js";
 
@@ -95,6 +95,11 @@ async function onMessage(msg) {
       const handler = session.awaitingText;
       session.awaitingText = null;
       return await handler(text);
+    }
+    // Auto-detect: paste CA/mint token kapan saja -> langsung mulai deploy flow
+    if (looksLikeMint(text)) {
+      await sendMessage("🔍 Token mint terdeteksi — mencari pool DLMM…");
+      return await handleMintPaste(text);
     }
     return await mainMenu();
   } catch (e) {
