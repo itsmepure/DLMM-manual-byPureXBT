@@ -6,6 +6,8 @@ import {
 } from "./telegram.js";
 import { getSession, resetSession } from "./bot/session.js";
 import { getWalletBalances } from "./engine/wallet.js";
+import { getActiveBin } from "./engine/dlmm.js";
+import { loadPositions, setAlerted } from "./store.js";
 import { fmtNum, fmtUsd, shortAddr } from "./bot/format.js";
 import { registerDeployFlow } from "./bot/deploy.js";
 import { registerPositionsFlow } from "./bot/positions.js";
@@ -100,6 +102,32 @@ async function onMessage(msg) {
     await sendMessage(`⚠️ Error: ${e.message}`).catch(() => null);
   }
 }
+
+// ─── Alert out-of-range (notifikasi saja, TANPA aksi otomatis) ───
+const ALERT_INTERVAL_MS = 120_000;
+
+async function checkOutOfRange() {
+  for (const p of loadPositions()) {
+    try {
+      const ab = await getActiveBin({ pool_address: p.pool });
+      const out = ab.binId < p.min_bin || ab.binId > p.max_bin;
+      if (out && !p.alerted) {
+        setAlerted(p.position, true);
+        await sendMessage(
+          `🔴 OUT OF RANGE: ${p.pool_name}\n` +
+          `Active bin ${ab.binId} di luar [${p.min_bin}, ${p.max_bin}].\n` +
+          `Buka 📊 Positions untuk claim/exit. (Tidak ada aksi otomatis.)`);
+      } else if (!out && p.alerted) {
+        setAlerted(p.position, false);
+        await sendMessage(`🟢 Kembali in-range: ${p.pool_name}`);
+      }
+    } catch (e) {
+      log("alert_error", `${p.position}: ${e.message}`);
+    }
+  }
+}
+
+setInterval(() => checkOutOfRange().catch(() => null), ALERT_INTERVAL_MS);
 
 // ─── Start ───────────────────────────────────────────────────────
 log("bot", "Manual DLMM bot starting…");

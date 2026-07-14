@@ -6,7 +6,7 @@
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js",
-    "test": "node --test test/",
+    "test": "node --test",
     "smoke": "node scripts/smoke.js",
     "postinstall": "node scripts/patch-anchor.js"
   },
