@@ -2,10 +2,21 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { config } from "../config.js";
 import { log } from "../logger.js";
 
-// Stub pengganti modul tracking agent (state.js / pool-memory.js) — bot manual
-// tidak punya state registry; field terkait diisi null/no-op.
+import { loadPositions } from "../store.js";
+
+// Pengganti state registry agent: baca positions.json bot.
+// PENTING untuk cost basis — deposit Meteora belum keindex utk posisi baru,
+// tanpa amount_sol dari store PnL posisi fresh jadi salah besar.
+const getTrackedPosition = (position) => {
+  const p = loadPositions().find((x) => x.position === position);
+  if (!p) return null;
+  return {
+    ...p,
+    deployed_at: p.opened_at,
+    bin_range: { min: p.min_bin, max: p.max_bin },
+  };
+};
 const poolNameFromMemory = () => null;
-const getTrackedPosition = () => null;
 const markOutOfRange = () => {};
 const markInRange = () => {};
 const minutesOutOfRange = () => null;

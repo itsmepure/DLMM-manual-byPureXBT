@@ -3,7 +3,7 @@ import { renderPnlCard, durationSince } from "./pnl-card.js";
 import { claimFees, closePosition } from "../engine/dlmm.js";
 import { computePositions } from "../engine/pnl.js";
 import { getWallet, getWalletBalances, swapToken, normalizeMint } from "../engine/wallet.js";
-import { loadPositions, removePosition } from "../store.js";
+import { loadPositions, removePosition, addHistory } from "../store.js";
 import { getSession, resetSession } from "./session.js";
 import config from "../config.js";
 import { fmtNum, fmtUsd, shortAddr, solscanTx, strategyLabel } from "./format.js";
@@ -153,6 +153,18 @@ async function doExit(msg, i) {
   const res = await closePosition({ position_address: p.position, pool_address: p.pool });
   if (!res.success) return sendMessageWithButtons(`❌ Exit gagal: ${res.error}`, [MENU_ROW]);
   removePosition(p.position);
+  addHistory({
+    position: p.position,
+    pool: p.pool,
+    pool_name: positionName(p),
+    strategy: p.strategy || null,
+    amount_sol: p.amount_sol ?? null,
+    pnl_usd: Number(p.pnl_usd) || 0,
+    pnl_pct: Number(p.pnl_pct) || 0,
+    fees_usd: Number(p.collected_fees_usd ?? 0) + (Number(p.unclaimed_fees_usd) || 0),
+    opened_at: p.opened_at || null,
+    closed_at: new Date().toISOString(),
+  });
   const cardSent = await sendCloseCard(p);
   await sendMessage("⏳ Auto-swap token ke SOL…");
   const sweep = await sweepToSol();

@@ -12,6 +12,7 @@ import { fmtNum, fmtUsd, shortAddr } from "./bot/format.js";
 import { registerDeployFlow, looksLikeMint, handleMintPaste } from "./bot/deploy.js";
 import { registerPositionsFlow } from "./bot/positions.js";
 import { registerSettingsFlow } from "./bot/settings.js";
+import { registerHistoryFlow } from "./bot/history.js";
 
 // ─── Env guard ───────────────────────────────────────────────────
 for (const key of ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID", "WALLET_PRIVATE_KEY", "RPC_URL"]) {
@@ -24,7 +25,8 @@ for (const key of ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID", "WALLET_PRIVATE_KEY
 // ─── Menu ────────────────────────────────────────────────────────
 const MENU_BUTTONS = [
   [{ text: "🚀 Deploy", callback_data: "dep" }, { text: "📊 Positions", callback_data: "pos" }],
-  [{ text: "💰 Balance", callback_data: "bal" }, { text: "⚙️ Settings", callback_data: "set" }],
+  [{ text: "💰 Balance", callback_data: "bal" }, { text: "📜 History", callback_data: "hist" }],
+  [{ text: "⚙️ Settings", callback_data: "set" }],
 ];
 
 export async function mainMenu(messageId = null) {
@@ -71,6 +73,7 @@ export const callbackHandlers = [
 registerDeployFlow({ commandHandlers, callbackHandlers, mainMenu });
 registerPositionsFlow({ commandHandlers, callbackHandlers, mainMenu });
 registerSettingsFlow({ commandHandlers, callbackHandlers });
+registerHistoryFlow({ commandHandlers, callbackHandlers });
 
 async function onMessage(msg) {
   try {

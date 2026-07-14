@@ -6,6 +6,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIR = process.env.STORE_DIR || __dirname;
 const SETTINGS_PATH = () => path.join(DIR, "settings.json");
 const POSITIONS_PATH = () => path.join(DIR, "positions.json");
+const HISTORY_PATH = () => path.join(DIR, "history.json");
 
 const DEFAULT_SETTINGS = {
   amountPresets: [0.5, 1, 2],
@@ -59,6 +60,18 @@ export function addPosition(p) {
 
 export function removePosition(positionAddress) {
   savePositions(loadPositions().filter((p) => p.position !== positionAddress));
+}
+
+// ─── History posisi yang sudah ditutup ─────────────────────────
+export function loadHistory() {
+  return readJson(HISTORY_PATH(), { closed: [] }).closed;
+}
+
+export function addHistory(entry) {
+  const closed = loadHistory();
+  closed.push(entry);
+  // batasi 200 entri terakhir agar file tidak membengkak
+  writeJsonAtomic(HISTORY_PATH(), { closed: closed.slice(-200) });
 }
 
 export function setAlerted(positionAddress, alerted) {
