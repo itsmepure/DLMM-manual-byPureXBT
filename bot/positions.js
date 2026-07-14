@@ -39,17 +39,19 @@ async function showPositions(messageId = null) {
   const list = await buildPositionList();
   const s = getSession();
   s.data.posList = list; // index dipakai callback claim/exit
+  const REFRESH_ROW = [{ text: "🔄 Refresh", callback_data: "pos" }, ...MENU_ROW];
   if (!list.length) {
     const text = "Tidak ada posisi terbuka.";
-    if (messageId) return editMessageWithButtons(text, messageId, [MENU_ROW]);
-    return sendMessageWithButtons(text, [MENU_ROW]);
+    if (messageId) return editMessageWithButtons(text, messageId, [REFRESH_ROW]);
+    return sendMessageWithButtons(text, [REFRESH_ROW]);
   }
-  const text = ["📊 Posisi terbuka:", ...list.map(positionLine)].join("\n\n");
+  const text = ["📊 Posisi terbuka:", ...list.map(positionLine),
+    `🕐 ${new Date().toLocaleTimeString("id-ID")}`].join("\n\n");
   const rows = list.map((p, i) => [
     { text: `💸 Claim ${i + 1}`, callback_data: `pos:claim:${i}` },
     { text: `🚪 Exit ${i + 1}`, callback_data: `pos:exit:${i}` },
   ]);
-  rows.push(MENU_ROW);
+  rows.push(REFRESH_ROW);
   if (messageId) return editMessageWithButtons(text, messageId, rows);
   return sendMessageWithButtons(text, rows);
 }
