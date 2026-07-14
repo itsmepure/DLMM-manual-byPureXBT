@@ -1,7 +1,8 @@
-import { sendMessage, sendMessageWithButtons, editMessageWithButtons } from "../telegram.js";
+import { sendMessage, sendMessageWithButtons, editMessageWithButtons, sendPhoto } from "../telegram.js";
+import { renderPnlCard, durationSince } from "./pnl-card.js";
 import { claimFees, closePosition } from "../engine/dlmm.js";
 import { computePositions } from "../engine/pnl.js";
-import { getWallet, getWalletBalances, swapToken } from "../engine/wallet.js";
+import { getWallet, getWalletBalances, swapToken, normalizeMint } from "../engine/wallet.js";
 import { loadPositions, removePosition } from "../store.js";
 import { getSession, resetSession } from "./session.js";
 import config from "../config.js";
@@ -101,7 +102,11 @@ async function sweepToSol() {
   const skip = new Set([config.tokens.sol, config.tokens.usdc]);
   for (const t of bal.tokens || []) {
     const usd = Number(t.usd ?? 0);
-    if (skip.has(t.mint) || !Number.isFinite(usd) || usd < 0.5) continue;
+    // normalisasi dulu: entri SOL native dari Helius punya varian mint yang
+    // baru jadi wSOL setelah normalizeMint — tanpa ini sweep mencoba SOL->SOL
+    const mint = normalizeMint(t.mint);
+    if (skip.has(mint) || t.symbol === "SOL" || t.symbol === "USDC") continue;
+    if (!Number.isFinite(usd) || usd < 0.5) continue;
     try {
       const r = await swapToken({ input_mint: t.mint, output_mint: config.tokens.sol, amount: t.balance });
       if (r?.success) {
@@ -117,6 +122,30 @@ async function sweepToSol() {
   return results;
 }
 
+// Kirim PnL card (win.png / lose.png) — best-effort, gagal = fallback teks biasa.
+async function sendCloseCard(p) {
+  try {
+    const pnlUsd = Number(p.pnl_usd) || 0;
+    const png = await renderPnlCard({
+      win: pnlUsd >= 0,
+      pair: positionName(p),
+      strategy: p.strategy ? strategyLabel(p.strategy) : null,
+      pnlUsd,
+      pnlPct: Number(p.pnl_pct) || 0,
+      durationText: durationSince(p.opened_at),
+    });
+    const sign = pnlUsd >= 0 ? "+" : "-";
+    const caption =
+      `${pnlUsd >= 0 ? "🟢" : "🔴"} ${positionName(p)} — POSISI DITUTUP\n` +
+      `PnL: ${sign}$${Math.abs(pnlUsd).toFixed(2)} (${Number(p.pnl_pct) >= 0 ? "+" : ""}${(Number(p.pnl_pct) || 0).toFixed(2)}%)`;
+    const sent = await sendPhoto(png, caption);
+    return !!sent;
+  } catch (e) {
+    log("card_warn", `PnL card gagal: ${e.message}`);
+    return false;
+  }
+}
+
 async function doExit(msg, i) {
   const p = getPos(i);
   if (!p) return sendMessage("Daftar kadaluarsa — buka 📊 Positions lagi.");
@@ -124,12 +153,14 @@ async function doExit(msg, i) {
   const res = await closePosition({ position_address: p.position, pool_address: p.pool });
   if (!res.success) return sendMessageWithButtons(`❌ Exit gagal: ${res.error}`, [MENU_ROW]);
   removePosition(p.position);
-  await sendMessage("Posisi ditutup. ⏳ Auto-swap token ke SOL…");
+  const cardSent = await sendCloseCard(p);
+  await sendMessage("⏳ Auto-swap token ke SOL…");
   const sweep = await sweepToSol();
   resetSession();
   const txs = [...(res.claim_txs || []), ...(res.close_txs || [])].map(solscanTx).join("\n");
   return sendMessageWithButtons([
     "✅ EXIT SELESAI",
+    cardSent ? null : `PnL: ${fmtUsd(p.pnl_usd)} (${fmtNum(p.pnl_pct, 2)}%)`,
     `Posisi: ${shortAddr(p.position)} (${positionName(p)})${res.already_closed ? " — sudah tertutup on-chain" : ""}`,
     txs ? `Tx:\n${txs}` : null,
     sweep.length ? sweep.join("\n") : "Tidak ada token yang perlu di-swap.",

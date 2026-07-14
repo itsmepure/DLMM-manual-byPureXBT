@@ -152,6 +152,26 @@ export async function editMessageWithButtons(text, messageId, inlineKeyboard) {
   });
 }
 
+export async function sendPhoto(pngBuffer, caption = "") {
+  if (!TOKEN || !chatId || !pngBuffer) return null;
+  try {
+    const form = new FormData();
+    form.append("chat_id", String(chatId));
+    if (caption) form.append("caption", String(caption).slice(0, 1024));
+    form.append("photo", new Blob([pngBuffer], { type: "image/png" }), "pnl-card.png");
+    const res = await fetchTgRetry(`${BASE}/sendPhoto`, { method: "POST", body: form }, "sendPhoto");
+    if (!res.ok) {
+      const err = await res.text();
+      log("telegram_error", `sendPhoto ${res.status}: ${err.slice(0, 200)}`);
+      return null;
+    }
+    return await res.json();
+  } catch (e) {
+    log("telegram_error", `sendPhoto failed: ${e.message}`);
+    return null;
+  }
+}
+
 export async function answerCallbackQuery(callbackQueryId, text = "") {
   if (!TOKEN || !callbackQueryId) return null;
   return postTelegramRaw("answerCallbackQuery", {
