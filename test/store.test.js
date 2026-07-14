@@ -10,7 +10,7 @@ const { loadSettings, saveSettings, loadPositions, addPosition, removePosition, 
 
 test("settings default dibuat saat pertama load", () => {
   const s = loadSettings();
-  assert.deepEqual(s.amountPresets, [0.5, 1, 2]);
+  assert.deepEqual(s.amountPresets, [1, 2, 4]);
   assert.deepEqual(s.rangePresets, [
     { down: 30, up: 0 },
     { down: 40, up: 0 },

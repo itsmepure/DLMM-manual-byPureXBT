@@ -9,7 +9,7 @@ const POSITIONS_PATH = () => path.join(DIR, "positions.json");
 const HISTORY_PATH = () => path.join(DIR, "history.json");
 
 const DEFAULT_SETTINGS = {
-  amountPresets: [0.5, 1, 2],
+  amountPresets: [1, 2, 4],
   rangePresets: [
     { down: 30, up: 0 },
     { down: 40, up: 0 },
