@@ -9,6 +9,7 @@ import { getWalletBalances } from "./engine/wallet.js";
 import { fmtNum, fmtUsd, shortAddr } from "./bot/format.js";
 import { registerDeployFlow } from "./bot/deploy.js";
 import { registerPositionsFlow } from "./bot/positions.js";
+import { registerSettingsFlow } from "./bot/settings.js";
 
 // ─── Env guard ───────────────────────────────────────────────────
 for (const key of ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID", "WALLET_PRIVATE_KEY", "RPC_URL"]) {
@@ -67,6 +68,7 @@ export const callbackHandlers = [
 
 registerDeployFlow({ commandHandlers, callbackHandlers, mainMenu });
 registerPositionsFlow({ commandHandlers, callbackHandlers, mainMenu });
+registerSettingsFlow({ commandHandlers, callbackHandlers });
 
 async function onMessage(msg) {
   try {
