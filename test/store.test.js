@@ -12,9 +12,9 @@ test("settings default dibuat saat pertama load", () => {
   const s = loadSettings();
   assert.deepEqual(s.amountPresets, [0.5, 1, 2]);
   assert.deepEqual(s.rangePresets, [
-    { down: 5, up: 3 },
-    { down: 10, up: 3 },
-    { down: 20, up: 3 },
+    { down: 30, up: 0 },
+    { down: 40, up: 0 },
+    { down: 50, up: 0 },
   ]);
 });
 

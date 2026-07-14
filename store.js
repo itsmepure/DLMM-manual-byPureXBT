@@ -10,9 +10,9 @@ const POSITIONS_PATH = () => path.join(DIR, "positions.json");
 const DEFAULT_SETTINGS = {
   amountPresets: [0.5, 1, 2],
   rangePresets: [
-    { down: 5, up: 3 },
-    { down: 10, up: 3 },
-    { down: 20, up: 3 },
+    { down: 30, up: 0 },
+    { down: 40, up: 0 },
+    { down: 50, up: 0 },
   ],
 };
 
