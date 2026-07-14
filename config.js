@@ -7,6 +7,9 @@ export const config = {
   tokens: {
     sol: "So11111111111111111111111111111111111111112",
     usdc: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    // alias uppercase — engine/wallet.js hasil salinan membaca config.tokens.SOL/USDC
+    SOL: "So11111111111111111111111111111111111111112",
+    USDC: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
   },
   jupiter: {
     apiKey: process.env.JUPITER_API_KEY || null,
